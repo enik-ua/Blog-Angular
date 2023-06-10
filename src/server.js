@@ -5,17 +5,13 @@ const database = "database";
 const http     = require('http');
 const sqlite   = require('sqlite3').verbose();
 const { v4: uuid } = require('uuid');
+const CryptoJS = require('crypto-js');
 
 let db = new sqlite.Database(database,(err)=>{
     if (err) {
         return console.error(err.message);
     }
     console.log('Connected to the SQlite database.');
-});
-
-db.serialize(() => {
-    db.run("CREATE TABLE IF NOT EXISTS 'articles' ('title' TEXT,'text' TEXT,'login' TEXT);");
-    db.run("CREATE TABLE IF NOT EXISTS 'users' ('login' TEXT,'password' TEXT);");
 });
 db.close();
 
@@ -53,39 +49,51 @@ const server = http.createServer((query, packet) => {
                 switch (query.url){
                     case "/articles":
                         let article = JSON.parse(data);
-                        let finish = true;
-                        console.log(article);
                         db.serialize(()=>{
-                            db.get('SELECT login,password FROM users WHERE login="'+article.login+'" AND password="'+ article.password+'";',[],(err,row)=>{
+                            let MD5 = CryptoJS.MD5(article.password);
+                            let hash = MD5.words[0]>0?MD5.words[0]:-MD5.words[0]+MD5.words[1]>0?MD5.words[1]:-MD5.words[1]+MD5.words[2]>0?MD5.words[2]:-MD5.words[2]+MD5.words[3]>0?MD5.words[3]:-MD5.words[3];
+                            db.get('SELECT login,password FROM users WHERE login="'+article.login+'" AND password="'+ hash+'";',[],(err,row)=>{
                                 if(err){
                                     console.error(err.message);
-                                    finish=false;
                                 }else if(row==undefined){
                                     console.error("Помилка аутентифікації");
-                                    finish=false;    
+                                }else{
+                                    db = new sqlite.Database('database');
+                                    db.run(`INSERT INTO articles (title,text,login) VALUES(?,?,?);`,[article.title,article.text,article.login],(err,row)=>{
+                                        if (err){
+                                            console.error(err.message);
+                                        }else{
+                                            packet.end();
+                                        }
+                                    });
+                                    db.close();
                                 }
                             });
-                            if (finish){
-                                db.run(`INSERT INTO articles (title,text,login) VALUES(?,?,?);`,[article.title,article.text,article.login],(err,row)=>{
-                                    if (err){
-                                        console.error(err.message);
-                                    }else{
-                                        packet.end();
-                                    }
-                                });
-                            }
                         });
                         break;
                     case "/users":
                         let user = JSON.parse(data);
                         db.serialize(()=>{
-                            db.run(`INSERT INTO users (login,password) VALUES(?,?);`,[user.login,user.password],(err,row)=>{
-                                if (err){
-                                    console.error(err.message);
+                    	    db.get('SELECT login FROM users WHERE login ="'+user.login+'";',[],(err,row)=>{
+                                if(err){
+                    		        console.error(err.message);
+                    		    }else if(row!==undefined){
+                                    console.error("Логін використаний");
+                                }else{
+                                    db = new sqlite.Database('database');
+                                    let MD5 = CryptoJS.MD5(user.password);
+                                    let hash = MD5.words[0]>0?MD5.words[0]:-MD5.words[0]+MD5.words[1]>0?MD5.words[1]:-MD5.words[1]+MD5.words[2]>0?MD5.words[2]:-MD5.words[2]+MD5.words[3]>0?MD5.words[3]:-MD5.words[3];
+                                    db.run(`INSERT INTO users (login,password) VALUES(?,?);`,[user.login,hash],(err,row)=>{
+                                        if (err){
+                                            console.error(err.message);
+                                        }else{
+                                            packet.end(row);
+                                        }
+                                    });
+                                    db.close();
                                 }
-                            });
+                    	    });
                         });            
-                        packet.end();
                         break;
                 }
                 break;
