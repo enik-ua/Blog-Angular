@@ -8,8 +8,4 @@ jobs:
         - uses: actions/checkout@v3
         - run: npm update
         - run: npm run build
-        - uses: JamesIves/github-pages-deploy-action@4.1.1
-          with:
-            branch: main
-            folder: dist/your-app-folder
         - run: echo "🍏 This job's status is ${{ job.status }}."
