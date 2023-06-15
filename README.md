@@ -2,13 +2,11 @@
 
 node version: v16.14.0
 
-For update dependencies run "npm update"
+Command "npm update" - update or install dependencies.
 
-Run windows7.bat or windows.bat.
+Windows7.bat or Windows.bat - run node srv\server.js for server-side, npm start - for angular.
 
-It is run command node srv\server.js for start server-side, npm start - runs angular.
-
-Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+The application start at `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 
