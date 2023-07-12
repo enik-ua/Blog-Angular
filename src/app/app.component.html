@@ -1,0 +1,27 @@
+<div *ngIf="listPage">
+  <div><h1>Блог</h1></div>
+  <div *ngFor="let blog of blogs">
+    <h3>
+      <a [title]="blog.title + ' details'">
+        {{ blog.title }}
+      </a>{{blog.text}}
+    </h3>
+  </div>
+  <button (click)="newArticle()">Новий запис</button>
+</div>
+<div *ngIf="newPage">
+  <div>Назва:<input id="title" type="text"></div>
+  <div><textarea id="text" cols="100" rows="25"></textarea></div>
+  <div>
+    Логін:<input id="login" type="text">
+    Пароль:<input id="password" type="password">
+    <a (click)="loginUser()" style="font-size: small;">Реєстрація</a>
+  </div>
+  <button (click)="saveArticle()">Записати</button>
+</div>
+<div *ngIf="loginPage">
+<div>Логін:<input id="login" type="text"></div>
+<div>Пароль:<input id="password1" type="password"></div>
+<div>Пароль:<input id="password2" type="password"></div>
+<button (click)="newUser()">Зареєструватися</button>
+</div>
