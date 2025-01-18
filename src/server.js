@@ -14,10 +14,10 @@ let blog = new db.Database(app.database,(err)=>{
 
 const server = http.createServer((query, packet) => {
     let data = "";
-    query.on("data", (chunk) => {
+    query.on((chunk) => {
       data += chunk;
     });
-    query.on("end",()=>{
+    query.on(()=>{
         packet.setHeader("Content-Type", "text/plain");
         packet.statusCode = 200;
         packet.setHeader("Access-Control-Allow-Origin",app.acao);
